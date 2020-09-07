@@ -2,23 +2,20 @@ package com.sourcecode.jdbcexample;
 
 public class Book {
 
-    private String id;
+    private int id;
     private String name;
     private String author;
     private float cost;
 
-    Book(String name, String author, float cost) {
+    public Book(int id, String name, String author, float cost) {
+        this.id = id;
         this.name = name;
         this.author = author;
         this.cost = cost;
     }
 
-    public String getId() {
+    public int getId() {
         return this.id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -43,5 +40,10 @@ public class Book {
 
     public void setCost(float cost) {
         this.cost = cost;
+    }
+
+    @Override()
+    public String toString() {
+        return "Book : " + this.name + " " + this.author + " " + this.cost;
     }
 }
