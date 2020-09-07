@@ -1,54 +1,1 @@
-package com.sourcecode.jdbcexample;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-
-public class DBOperations {
-
-    private static Connection connection;
-
-    public static void getConnection() throws SQLException {
-
-        if (connection == null) {
-            // protocol : subprotocol(type of db) : (host:port) : database_name
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/books", "user", "pass");
-        }
-    }
-
-    public static List<Book> getBooks() throws SQLException {
-
-        getConnection();
-
-        List<Book> booksResult = new ArrayList<>();
-
-        Statement statement = connection.createStatement();
-
-        ResultSet result = statement.executeQuery("SELECT * FROM books");
-
-        while (result.next()) {
-
-            String book_name = result.getString(2);
-            String book_author = result.getString(3);
-            float book_cost = result.getFloat(4);
-
-            Book book = new Book(book_name, book_author, book_cost);
-            booksResult.add(book);
-        }
-
-        return booksResult;
-
-    }
-
-    public static void createTable(String tableName) throws SQLException {
-        getConnection();
-
-        Statement statement = connection.createStatement();
-        statement.execute("CREATE TABLE tb_books ( id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30) NOT NULL, author VARCHAR(30) NOT NULL, cost DECIMAL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )");
-    }
-
-}
+package com.sourcecode.jdbcexample;import java.sql.Connection;import java.sql.DriverManager;import java.sql.PreparedStatement;import java.sql.ResultSet;import java.sql.SQLException;import java.sql.Statement;import java.util.ArrayList;import java.util.List;public class DBOperations {    private static Connection connection;    public static void getConnection() throws SQLException {        if (connection == null) {            String databaseUrl = System.getenv("MYSQL_DATABASE_URL");            String databaseUser = System.getenv("MYSQL_DATABASE_USER");            String databasePassword = System.getenv("MYSQL_DATABASE_PASSWORD");            // protocol : subprotocol(type of db) : (host:port) : database_name            connection = DriverManager.getConnection(databaseUrl, databaseUser, databasePassword);        }    }    public static void closeConnection() {        if (connection != null) {            connection = null;        }    }    public static List<Book> getBooks() throws SQLException {        getConnection();        List<Book> booksResult = new ArrayList<>();        Statement statement = connection.createStatement();        ResultSet result = statement.executeQuery("SELECT * FROM books");        while (result.next()) {            String book_name = result.getString(2);            String book_author = result.getString(3);            float book_cost = result.getFloat(4);            Book book = new Book(book_name, book_author, book_cost);            booksResult.add(book);        }        return booksResult;    }    public static void createTable(String tableName) throws SQLException {        getConnection();        Statement statement = connection.createStatement();        statement.execute("CREATE TABLE tb_books ( id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30) NOT NULL, author VARCHAR(30) NOT NULL, cost DECIMAL, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )");    }    public static void insert(Book book) throws SQLException {        getConnection();        PreparedStatement prepStatement = connection.prepareStatement("INSERT INTO tb_books VALUES (null,?,?,?)");        prepStatement.setString(1, book.getName());        prepStatement.setString(1, book.getAuthor());        prepStatement.setFloat(3, book.getCost());        int updateCount = prepStatement.executeUpdate();        if (updateCount < 1) {            System.out.println("INSERT : FAILED");        }    }}
